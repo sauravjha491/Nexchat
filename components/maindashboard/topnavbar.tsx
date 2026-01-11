@@ -1,27 +1,72 @@
+
+
 'use client';
-
 import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import Link from "next/link";
 
-const Navbar = () => {
+interface TopNavbarProps {
+  
+}
+
+const Navbar: React.FC<TopNavbarProps> = ({  }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleAuthClick = (type: 'login' | 'register') => {
+    window.dispatchEvent(new CustomEvent('openAuthModal', { detail: type }));
+  };
+
   return (
-    <div className=" bg-[#122733]
-    ">
-    <header className="flex items-center justify-between px-6 md:px-12 h-16">
-      <div className="flex items-center gap-2">
-        <Image src="/logo.png" alt="ChatApp" width={100} height={100} />
-       
+    <header
+      className="
+        relative
+        top-0
+        z-[20]
+        flex justify-between items-center
+        px-3 md:px-4 py-2
+        bg-[#101b22dd]
+        backdrop-blur-md
+      "
+      
+    >
+      {/* Logo */}
+      <div className="relative w-30 h-20 px-2">
+        <Link href="/home" className="block">
+        <Image
+          src="/logo.png"
+          alt="Logo"
+          fill
+          style={{ objectFit: 'contain' }}
+          priority
+        />
+         </Link>
       </div>
 
-      <div className="flex gap-3">
-        <button className="px-4 py-2 rounded-lg border border-slate-600 text-white hover:bg-slate-800 transition">
+      {/* Login / Register */}
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => handleAuthClick('login')}
+          className="bg-gray-600 hover:bg-gray-700 shadow-lg hover:shadow-xl px-6 py-2 rounded-lg text-white font-medium transition-all duration-300"
+        >
           Login
         </button>
-        <button className="px-4 py-2 rounded-lg bg-sky-500 text-black font-semibold hover:bg-sky-400 transition">
-          Sign Up
+        <button
+          onClick={() => handleAuthClick('register')}
+          className="bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl px-6 py-2 rounded-lg text-white font-medium transition-all duration-300"
+        >
+          Register
         </button>
+
+        
       </div>
     </header>
-    </div>
   );
 };
 

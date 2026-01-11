@@ -1,65 +1,179 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import Navbar from '@/components/maindashboard/topnavbar';
+import Hero from '@/components/maindashboard/hero';
+import Features from '@/components/maindashboard/features';
+import Footer from '@/components/maindashboard/footer';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { LoginForm } from '@/components/auths/loginform';
+import { SignupForm } from '@/components/auths/signupform';
+import MobileBottomBar from '@/components/dashboard/mobillebuttombar';
+
+/* ---------------- Auth Modal ---------------- */
+const AuthModal: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  initialType: 'login' | 'register';
+  isMobile: boolean;
+}> = ({ open, onClose, initialType, isMobile }) => {
+  const [modalMode, setModalMode] = useState<'login' | 'register'>(initialType);
+
+  useEffect(() => {
+    if (open) setModalMode(initialType);
+  }, [open, initialType]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
+  if (!open) return null;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={onClose}
+          />
+
+          {/* Modal */}
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center p-4 z-50"
+            initial={{ scale: isMobile ? 1 : 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: isMobile ? 1 : 0.8, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div
+              className={`relative z-50 w-full ${
+                isMobile ? ' rounded-none' : 'max-w-md max-h-screen rounded-xl'
+              } overflow-auto bg-[#0f172a] p-6`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4">
+                <div className="relative w-32 h-20">
+                  <Image src="/logo.png" alt="Logo" fill style={{ objectFit: 'contain' }} priority />
+                </div>
+                <button
+                  onClick={onClose}
+                  className="text-slate-400 hover:text-white text-2xl leading-none"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Forms */}
+              {modalMode === 'login' ? (
+                <LoginForm onSuccess={onClose} onSwitch={() => setModalMode('register')} />
+              ) : (
+                <SignupForm onSuccess={onClose} onSwitch={() => setModalMode('login')} />
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+/* ---------------- Home Page ---------------- */
+export default function HomePage() {
+ const [isMobile, setIsMobile] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authType, setAuthType] = useState<'login' | 'register'>('login');
+
+  // Responsive check
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  
+
+  // HeroSection event listener
+  useEffect(() => {
+    const handleHeroAuth = (event: any) => {
+      setAuthType(event.detail);
+      setAuthOpen(true);
+    };
+    window.addEventListener('openAuthModal', handleHeroAuth);
+    return () => window.removeEventListener('openAuthModal', handleHeroAuth);
+  }, []);
+
+  // Navbar auth click handler
+  const handleAuthClick = (type: 'login' | 'register') => {
+    setAuthType(type);
+    setAuthOpen(true);
+  };
+  return (
+  <div className="flex min-h-screen bg-[#141f27] text-white overflow-x-hidden">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <motion.div
+          
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed top-0 left-0 h-screen bg-[#0f1420] shadow-lg overflow-hidden z-50 flex flex-col"
+        >
+          
+        </motion.div>
+      )}
+
+      {/* Top Navbar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 z-40"
+        animate={{
+       
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      >
+        <Navbar  />
+      </motion.div>
+
+      {/* Main Content */}
+      <motion.main
+        className="flex-1 flex flex-col overflow-auto pt-[112px] pb-16 px-3 md:px-8"
+        animate={{
+         
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      >
+        <Hero />
+        <section>
+          <Features />
+        </section>
+       
+        <Footer />
+      </motion.main>
+
+      {/* Mobile Bottom Bar */}
+      {isMobile && (
+        <div className="fixed bottom-0 w-full z-50 h-16">
+          <MobileBottomBar onBrowseClick={() => {}} />
         </div>
-      </main>
+      )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        initialType={authType}
+        isMobile={isMobile}
+      />
     </div>
   );
 }
