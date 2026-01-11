@@ -1,15 +1,4 @@
-// import Navbar from "@/components/dashboard/topnavbar";
 
-// function App() {
-//   return (
-//     <>
-//       <Navbar />
-//       {/* chat layout */}
-//     </>
-//   );
-// }
-
-// export default App;
 import React from "react";
 import Navbar from "@/components/dashboard/topnavbar";
 const chats = [

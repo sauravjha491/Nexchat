@@ -6,7 +6,7 @@ const Navbar: React.FC = () => {
     <header className="navbar">
       {/* Left */}
       <div className="nav-left">
-        <span className="logo">ChatApp</span>
+        <span className="logo">NEXchat</span>
       </div>
 
       {/* Center */}
